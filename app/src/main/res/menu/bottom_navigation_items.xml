@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<item
+    android:id="@+id/auto"
+    android:icon="@drawable/audio_frag"
+    android:title="Record Audio"/>
+
+    <item
+        android:id="@+id/playlsits"
+        android:icon="@drawable/playlist_frag"
+        android:title="Playlists"/>
+
+    <item
+        android:id="@+id/userProfile"
+        android:icon="@drawable/profle_frag"
+        android:title="User Profile"/>
+</menu>
