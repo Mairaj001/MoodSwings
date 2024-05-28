@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "867936210843",
+    "project_id": "moodswings-f8524",
+    "storage_bucket": "moodswings-f8524.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:867936210843:android:01b908fe3a41aa9cd19b3e",
+        "android_client_info": {
+          "package_name": "com.example.moodswings"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpO1lbLEyMJzCzYJ3yWvHye-ZTCt5yp8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
