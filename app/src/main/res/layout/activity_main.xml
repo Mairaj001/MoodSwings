@@ -29,7 +29,7 @@
         app:mbn_defaultIconColor="#E2EBEF"
         app:mbn_rippleColor="#2f424242"
         app:mbn_selectedIconColor="#232f34"
-        app:mbn_shadowColor="#1f212121"
+        app:mbn_shadowColor="#1FD5D4D4"
 
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
