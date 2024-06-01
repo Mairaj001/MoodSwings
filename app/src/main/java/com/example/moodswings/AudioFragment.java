@@ -1,11 +1,10 @@
 package com.example.moodswings;
 
-
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
-import com.example.moodswings.Sentiment.SentimentAnalyzer;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -26,24 +25,34 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.moodswings.Sentiment.SentimentAnalyzer;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import com.google.firebase.storage.StorageMetadata;
 
 public class AudioFragment extends Fragment {
-    LottieAnimationView recordingAnimation,PlayPauseButton;
+    LottieAnimationView recordingAnimation, PlayPauseButton;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private MediaRecorder mediaRecorder;
     private String fileName;
     private MediaPlayer mediaPlayer;
-    private Boolean isPlaying=false;
+    private Boolean isPlaying = false;
 
     private boolean isRecording = false;
 
@@ -52,44 +61,50 @@ public class AudioFragment extends Fragment {
     LinearLayout SentimentContainer;
     ProgressBar progressBar;
 
-    TextView tvText,tvSentiment,tvConfidence,tvTimeStamp;
-    Button transcribeButon;
+    TextView tvText, tvSentiment, tvConfidence, tvTimeStamp;
+    Button transcribeButton;
 
-    ExecutorService executorService, sentimentExecutor = Executors.newSingleThreadExecutor();
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageReference;
 
-    public  final  String TAG="AudioFragment";
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    ExecutorService sentimentExecutor = Executors.newSingleThreadExecutor();
+
+    ExecutorService FirebaseUpload = Executors.newSingleThreadExecutor();
+
+    public final String TAG = "AudioFragment";
 
     SentimentAnalyzer sentimentAnalyzer;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.audio_fragment, container, false);
         recordingAnimation = view.findViewById(R.id.animationView);
-        PlayPauseButton= view.findViewById(R.id.animationViewPlaypause);
-        SentimentContainer=view.findViewById(R.id.linearLayoutSentimentResult);
-        progressBar=view.findViewById(R.id.pgSentiment);
-        transcribeButon=view.findViewById(R.id.transcirbe_btn);
+        PlayPauseButton = view.findViewById(R.id.animationViewPlaypause);
+        SentimentContainer = view.findViewById(R.id.linearLayoutSentimentResult);
+        progressBar = view.findViewById(R.id.pgSentiment);
+        transcribeButton = view.findViewById(R.id.transcirbe_btn);
 
-        tvText=view.findViewById(R.id.tvText);
-        tvSentiment=view.findViewById(R.id.tvSentiment);
-        tvConfidence=view.findViewById(R.id.tvConfidence);
-        tvTimeStamp=view.findViewById(R.id.tvTimeStamp);
+        tvText = view.findViewById(R.id.tvText);
+        tvSentiment = view.findViewById(R.id.tvSentiment);
+        tvConfidence = view.findViewById(R.id.tvConfidence);
+        tvTimeStamp = view.findViewById(R.id.tvTimeStamp);
 
-        sentimentAnalyzer= new SentimentAnalyzer();
-
-       transcribeButon.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               if(path!=null){
-               transcribeAndAnalyzeAudio(path);
-               } else {
-                   Toast.makeText(getActivity().getApplicationContext(),"Please Record the Audio First",Toast.LENGTH_SHORT).show();
-               }
-
-           }
-       });
+        sentimentAnalyzer = new SentimentAnalyzer(); // Initialize your sentiment analyzer here
+        storageReference = FirebaseStorage.getInstance().getReference();
+        transcribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (path != null) {
+                    String audio="https://github.com/AssemblyAI-Examples/audio-examples/raw/main/20230607_me_canadian_wildfires.mp3";
+//                    transcribeAndAnalyzeAudio(path);
+                      uploadAudioToFirebaseInBackground(path);
+                } else {
+                    Toast.makeText(getActivity().getApplicationContext(), "Please Record the Audio First", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         recordingAnimation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,6 +125,60 @@ public class AudioFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void uploadAudioToFirebaseInBackground(String filePath) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                uploadAudioToFirebase(filePath);
+            }
+        });
+    }
+    private void uploadAudioToFirebase(String filePath) {
+        File audioFile = new File(filePath);
+        if (!audioFile.exists()) {
+            Log.e(TAG, "File not found: " + filePath);
+            return;
+        }
+
+        Uri fileUri = Uri.fromFile(audioFile);
+        String fileName = audioFile.getName();
+
+        // Explicitly specify the MIME type for audio files
+        StorageReference audioRef = storageReference.child("audio/" + fileName);
+        UploadTask uploadTask = audioRef.putFile(fileUri, new StorageMetadata.Builder()
+                .setContentType("audio/3gpp") // Set the MIME type explicitly
+                .build());
+
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                audioRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        String downloadUrl = uri.toString();
+                        Log.d(TAG, "Audio uploaded successfully. Download URL: " + downloadUrl);
+                        // Now you can pass this downloadUrl to your sentiment analyzer or use it as needed
+                        transcribeAndAnalyzeAudio(downloadUrl);
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Failed to get download URL: " + e.getMessage());
+
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG, "Failed to upload audio file: " + e.getMessage());
+
+            }
+        });
     }
 
     private void transcribeAndAnalyzeAudio(String audioPath) {
@@ -184,32 +253,18 @@ public class AudioFragment extends Fragment {
         return null;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private void togglePlayPause() {
-        if(path!=null){
-        if (!isPlaying) {
-            if(isRecording){ stopRecording();}
-            startPlaying();
+        if (path != null) {
+            if (!isPlaying) {
+                if (isRecording) {
+                    stopRecording();
+                }
+                startPlaying();
+            } else {
+                pausePlaying();
+            }
         } else {
-            pausePlaying();
-        }
-        } else {
-            Toast.makeText(getActivity().getApplicationContext(),"Please Record the Audio First",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity().getApplicationContext(), "Please Record the Audio First", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -235,7 +290,8 @@ public class AudioFragment extends Fragment {
                 }
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "startPlaying: failed to play media", e);
+            Toast.makeText(getActivity(), "Failed to play audio", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -256,6 +312,7 @@ public class AudioFragment extends Fragment {
             PlayPauseButton.pauseAnimation();
         }
     }
+
     private void toggleRecording() {
         if (!isRecording) {
             isRecording = true;
@@ -265,7 +322,7 @@ public class AudioFragment extends Fragment {
                     try {
                         startRecording();
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        Log.e(TAG, "toggleRecording: failed to start recording", e);
                     }
                 }
             });
@@ -288,12 +345,9 @@ public class AudioFragment extends Fragment {
         mediaRecorder.prepare();
         mediaRecorder.start();
 
-        requireActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                recordingAnimation.playAnimation();
-                Toast.makeText(getContext(), "Recording started", Toast.LENGTH_SHORT).show();
-            }
+        requireActivity().runOnUiThread(() -> {
+            recordingAnimation.playAnimation();
+            Toast.makeText(getContext(), "Recording started", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -304,13 +358,10 @@ public class AudioFragment extends Fragment {
             mediaRecorder = null;
 
             isRecording = false;
-            requireActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    recordingAnimation.cancelAnimation();
-                    recordingAnimation.setProgress(0);
-                    Toast.makeText(getActivity().getApplicationContext(), "Recording stopped", Toast.LENGTH_SHORT).show();
-                }
+            requireActivity().runOnUiThread(() -> {
+                recordingAnimation.cancelAnimation();
+                recordingAnimation.setProgress(0);
+                Toast.makeText(getActivity().getApplicationContext(), "Recording stopped", Toast.LENGTH_SHORT).show();
             });
         }
     }
@@ -330,10 +381,10 @@ public class AudioFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED ||
                 ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             requestRecordingPermission();
-            Toast.makeText(getActivity().getApplicationContext(),"permission false",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity().getApplicationContext(), "permission false", Toast.LENGTH_SHORT).show();
             return true;
         }
-        Toast.makeText(getActivity().getApplicationContext(),"permission true",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity().getApplicationContext(), "permission true", Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -343,7 +394,6 @@ public class AudioFragment extends Fragment {
 
         if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
                 Toast.makeText(getActivity().getApplicationContext(), "Permission Done", Toast.LENGTH_SHORT).show();
                 toggleRecording();
             } else {
@@ -361,5 +411,6 @@ public class AudioFragment extends Fragment {
         }
 
         executorService.shutdown();
+        sentimentExecutor.shutdown();
     }
 }
