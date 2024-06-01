@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     case userProfile:name="User Profile"; break;
                 }
 
-                bnv.setCount(userProfile,"9");
+
                 return null;
             }
         });
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadFragment(Fragment fragment) {
-        // Replace the existing fragment with the new fragment
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frameLayout, fragment);

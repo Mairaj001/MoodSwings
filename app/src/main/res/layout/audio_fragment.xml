@@ -25,16 +25,57 @@
             android:padding="12sp"
             />
     </LinearLayout>
-   <androidx.constraintlayout.widget.ConstraintLayout
-       android:id="@+id/parentRelative"
-       android:background="@drawable/radius"
 
-       android:layout_width="match_parent"
-       android:layout_height="720sp"
-       app:layout_constraintStart_toStartOf="parent"
-       app:layout_constraintEnd_toEndOf="parent"
-       app:layout_constraintTop_toBottomOf="@+id/linerLayoutUpper"
-       >
-   </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/parentRelative"
+        android:layout_width="match_parent"
+
+        android:layout_height="720sp"
+        android:background="@drawable/radius"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linerLayoutUpper">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+
+            android:id="@+id/buttonsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animationView"
+                android:layout_width="236dp"
+                android:layout_height="201dp"
+                android:layout_marginTop="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/record_adio_anim" />
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animationViewPlaypause"
+                android:layout_width="134dp"
+                android:layout_height="107dp"
+                android:layout_marginTop="52dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.805"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/anim_play" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
