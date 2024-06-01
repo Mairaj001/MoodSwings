@@ -127,7 +127,8 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="60dp"
+                    >
 
                     <TextView
                         android:id="@+id/textViewText"
@@ -146,7 +147,7 @@
                         android:layout_height="wrap_content"
 
                         android:textColor="@color/black"
-                        android:textAlignment="center" />
+                        android:textAlignment="viewStart" />
 
                 </LinearLayout>
 
@@ -157,7 +158,7 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="60dp">
 
                     <TextView
                         android:id="@+id/textViewSentiment"
@@ -188,7 +189,7 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="60dp">
 
                     <TextView
                         android:id="@+id/textViewConfidence"
@@ -218,7 +219,7 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="60dp">
 
                     <TextView
                         android:id="@+id/textViewTimeStamp"

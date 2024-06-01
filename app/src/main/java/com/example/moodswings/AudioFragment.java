@@ -97,7 +97,7 @@ public class AudioFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (path != null) {
-                    String audio="https://github.com/AssemblyAI-Examples/audio-examples/raw/main/20230607_me_canadian_wildfires.mp3";
+
 //                    transcribeAndAnalyzeAudio(path);
                       uploadAudioToFirebaseInBackground(path);
                 } else {
