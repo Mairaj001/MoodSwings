@@ -1,6 +1,7 @@
 package com.example.moodswings;
 
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -20,6 +21,7 @@ import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -47,7 +49,7 @@ import java.util.concurrent.Future;
 import com.google.firebase.storage.StorageMetadata;
 
 public class AudioFragment extends Fragment {
-    LottieAnimationView recordingAnimation, PlayPauseButton;
+    LottieAnimationView recordingAnimation, PlayPauseButton, emoji;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private MediaRecorder mediaRecorder;
     private String fileName;
@@ -64,17 +66,21 @@ public class AudioFragment extends Fragment {
     TextView tvText, tvSentiment, tvConfidence, tvTimeStamp;
     Button transcribeButton;
 
-    private FirebaseStorage firebaseStorage;
+
     private StorageReference storageReference;
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     ExecutorService sentimentExecutor = Executors.newSingleThreadExecutor();
 
-    ExecutorService FirebaseUpload = Executors.newSingleThreadExecutor();
+
 
     public final String TAG = "AudioFragment";
 
     SentimentAnalyzer sentimentAnalyzer;
+
+    ConstraintLayout emojiContainer;
+
+    Button suggestSongs;
 
     @Nullable
     @Override
@@ -90,7 +96,20 @@ public class AudioFragment extends Fragment {
         tvSentiment = view.findViewById(R.id.tvSentiment);
         tvConfidence = view.findViewById(R.id.tvConfidence);
         tvTimeStamp = view.findViewById(R.id.tvTimeStamp);
+        emojiContainer=view.findViewById(R.id.emojiContainer);
+        emoji=view.findViewById(R.id.ShowemojiAnim);
+        suggestSongs=view.findViewById(R.id.SuggestSongs);
 
+
+        suggestSongs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(path!=null){startActivity(new Intent(getActivity(), ShowSongs.class));}
+                else {
+                    Toast.makeText(getActivity().getApplicationContext(),"Please record the audio First",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         sentimentAnalyzer = new SentimentAnalyzer(); // Initialize your sentiment analyzer here
         storageReference = FirebaseStorage.getInstance().getReference();
         transcribeButton.setOnClickListener(new View.OnClickListener() {
@@ -203,6 +222,7 @@ public class AudioFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     SentimentContainer.setVisibility(View.VISIBLE);
+                    emojiContainer.setVisibility(View.VISIBLE);
 
                     if (result != null) {
                         String lastSentiment = extractLastSentiment(result);
@@ -234,8 +254,31 @@ public class AudioFragment extends Fragment {
         tvSentiment.setText(sentiment);
         tvConfidence.setText(String.valueOf(confidence));
         tvTimeStamp.setText(String.format("%d - %d", start, end));
+
+        ChangeEmojiSentiment(sentiment);
     }
 
+
+    private  void ChangeEmojiSentiment(@NonNull String sentiment){
+
+
+        if(sentiment.toLowerCase().equals("neutral")){
+            emoji.setAnimation(R.raw.neutral_emoji);
+            Toast.makeText(getActivity().getApplicationContext(),sentiment,Toast.LENGTH_SHORT).show();
+            emoji.playAnimation();
+        } else if(sentiment.toLowerCase().equals("positive")){
+            emoji.setAnimation(R.raw.happy_emoji);
+            Toast.makeText(getActivity().getApplicationContext(),sentiment,Toast.LENGTH_SHORT).show();
+            emoji.playAnimation();
+
+        } else if(sentiment.toLowerCase().equals("negative")){
+            emoji.setAnimation(R.raw.angry_emoji);
+            Toast.makeText(getActivity().getApplicationContext(),sentiment,Toast.LENGTH_SHORT).show();
+            emoji.playAnimation();
+        } else {
+
+        }
+    }
     private String extractLastSentiment(String result) {
         if (result != null) {
             JsonObject resultObject = JsonParser.parseString(result).getAsJsonObject();
