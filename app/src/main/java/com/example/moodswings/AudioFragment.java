@@ -82,6 +82,7 @@ public class AudioFragment extends Fragment {
 
     Button suggestSongs;
 
+    String sentiment;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -104,7 +105,11 @@ public class AudioFragment extends Fragment {
         suggestSongs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(path!=null){startActivity(new Intent(getActivity(), ShowSongs.class));}
+                if(path!=null){
+                    Intent intent = new Intent(getActivity(), ShowSongs.class);
+                    intent.putExtra("Sentiment",sentiment);
+                    startActivity(intent);
+                }
                 else {
                     Toast.makeText(getActivity().getApplicationContext(),"Please record the audio First",Toast.LENGTH_SHORT).show();
                 }
@@ -261,7 +266,7 @@ public class AudioFragment extends Fragment {
 
     private  void ChangeEmojiSentiment(@NonNull String sentiment){
 
-
+         this.sentiment=sentiment.toLowerCase();
         if(sentiment.toLowerCase().equals("neutral")){
             emoji.setAnimation(R.raw.neutral_emoji);
             Toast.makeText(getActivity().getApplicationContext(),sentiment,Toast.LENGTH_SHORT).show();
