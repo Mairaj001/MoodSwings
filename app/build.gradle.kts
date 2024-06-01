@@ -37,7 +37,9 @@ android {
 }
 
 dependencies {
-
+    implementation("com.assemblyai:assemblyai-java:1.1.2")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.airbnb.android:lottie:6.4.1")
     implementation("com.etebarian:meow-bottom-navigation:1.2.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

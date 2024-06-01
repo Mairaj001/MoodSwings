@@ -3,14 +3,19 @@ package com.example.moodswings;
 
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
-
+import com.example.moodswings.Sentiment.SentimentAnalyzer;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -21,11 +26,16 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class AudioFragment extends Fragment {
     LottieAnimationView recordingAnimation,PlayPauseButton;
@@ -39,7 +49,17 @@ public class AudioFragment extends Fragment {
 
     public String path;
 
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    LinearLayout SentimentContainer;
+    ProgressBar progressBar;
+
+    TextView tvText,tvSentiment,tvConfidence,tvTimeStamp;
+    Button transcribeButon;
+
+    ExecutorService executorService, sentimentExecutor = Executors.newSingleThreadExecutor();
+
+    public  final  String TAG="AudioFragment";
+
+    SentimentAnalyzer sentimentAnalyzer;
 
     @Nullable
     @Override
@@ -48,6 +68,29 @@ public class AudioFragment extends Fragment {
         View view = inflater.inflate(R.layout.audio_fragment, container, false);
         recordingAnimation = view.findViewById(R.id.animationView);
         PlayPauseButton= view.findViewById(R.id.animationViewPlaypause);
+        SentimentContainer=view.findViewById(R.id.linearLayoutSentimentResult);
+        progressBar=view.findViewById(R.id.pgSentiment);
+        transcribeButon=view.findViewById(R.id.transcirbe_btn);
+
+        tvText=view.findViewById(R.id.tvText);
+        tvSentiment=view.findViewById(R.id.tvSentiment);
+        tvConfidence=view.findViewById(R.id.tvConfidence);
+        tvTimeStamp=view.findViewById(R.id.tvTimeStamp);
+
+        sentimentAnalyzer= new SentimentAnalyzer();
+
+       transcribeButon.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               if(path!=null){
+               transcribeAndAnalyzeAudio(path);
+               } else {
+                   Toast.makeText(getActivity().getApplicationContext(),"Please Record the Audio First",Toast.LENGTH_SHORT).show();
+               }
+
+           }
+       });
+
         recordingAnimation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +111,94 @@ public class AudioFragment extends Fragment {
 
         return view;
     }
+
+    private void transcribeAndAnalyzeAudio(String audioPath) {
+        progressBar.setVisibility(View.VISIBLE);
+        SentimentContainer.setVisibility(View.GONE);
+
+        Callable<String> transcribeTask = () -> {
+            try {
+                String transcriptId = sentimentAnalyzer.transcribeAudio(audioPath);
+                return sentimentAnalyzer.pollTranscription(transcriptId);
+            } catch (Exception e) {
+                Log.e(TAG, "Transcription failed", e);
+                return null;
+            }
+        };
+
+        Future<String> future = sentimentExecutor.submit(transcribeTask);
+
+        sentimentExecutor.execute(() -> {
+            try {
+                String result = future.get();
+                requireActivity().runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    SentimentContainer.setVisibility(View.VISIBLE);
+
+                    if (result != null) {
+                        String lastSentiment = extractLastSentiment(result);
+                        if (lastSentiment != null) {
+                            updateUIWithSentiment(lastSentiment);
+                        } else {
+                            Log.e(TAG, "No sentiment analysis results found");
+                        }
+                    } else {
+                        Log.e(TAG, "Transcription failed, no results");
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error processing transcription result", e);
+            }
+        });
+    }
+
+    private void updateUIWithSentiment(String sentimentData) {
+        JsonObject sentimentJson = JsonParser.parseString(sentimentData).getAsJsonObject();
+
+        String text = sentimentJson.get("text").getAsString();
+        String sentiment = sentimentJson.get("sentiment").getAsString();
+        double confidence = sentimentJson.get("confidence").getAsDouble();
+        int start = sentimentJson.get("start").getAsInt();
+        int end = sentimentJson.get("end").getAsInt();
+
+        tvText.setText(text);
+        tvSentiment.setText(sentiment);
+        tvConfidence.setText(String.valueOf(confidence));
+        tvTimeStamp.setText(String.format("%d - %d", start, end));
+    }
+
+    private String extractLastSentiment(String result) {
+        if (result != null) {
+            JsonObject resultObject = JsonParser.parseString(result).getAsJsonObject();
+            if (resultObject.has("sentiment_analysis_results")) {
+                JsonArray sentimentResults = resultObject.get("sentiment_analysis_results").getAsJsonArray();
+                if (sentimentResults.size() > 0) {
+                    return sentimentResults.get(sentimentResults.size() - 1).toString();
+                } else {
+                    Log.e(TAG, "No sentiment analysis results found");
+                }
+            } else {
+                Log.e(TAG, "No sentiment analysis results found");
+            }
+        }
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void togglePlayPause() {
         if(path!=null){
@@ -199,10 +330,10 @@ public class AudioFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED ||
                 ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             requestRecordingPermission();
-            Toast.makeText(getActivity().getApplicationContext(),"permissin false",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity().getApplicationContext(),"permission false",Toast.LENGTH_SHORT).show();
             return true;
         }
-        Toast.makeText(getActivity().getApplicationContext(),"permissin true",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity().getApplicationContext(),"permission true",Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -212,7 +343,7 @@ public class AudioFragment extends Fragment {
 
         if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Start recording immediately if permission is granted
+
                 Toast.makeText(getActivity().getApplicationContext(), "Permission Done", Toast.LENGTH_SHORT).show();
                 toggleRecording();
             } else {
@@ -228,5 +359,7 @@ public class AudioFragment extends Fragment {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+
+        executorService.shutdown();
     }
 }
