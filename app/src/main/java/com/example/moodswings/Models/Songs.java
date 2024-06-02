@@ -2,24 +2,24 @@ package com.example.moodswings.Models;
 
 public class Songs {
 
-    String title,coverImage,singer,songUrl;
+    String Title,coverImage,singer,songUrl;
 
     public Songs(){
 
     }
     public Songs(String title, String coverImage, String singer, String songUrl) {
-        this.title = title;
+        this.Title = title;
         this.coverImage = coverImage;
         this.singer = singer;
         this.songUrl = songUrl;
     }
 
     public String getTitle() {
-        return title;
+        return Title;
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.Title = title;
     }
 
     public String getCoverImage() {

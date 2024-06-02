@@ -12,7 +12,7 @@
 
     <com.airbnb.lottie.LottieAnimationView
         android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_height="100dp"
         android:layout_margin="16dp"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
@@ -22,11 +22,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="we recommend these songs"
-        android:textColor="@color/white"
+        android:text="We Recommend these Songs"
+        android:textColor="@color/my_primary"
         android:textSize="24sp"
-        android:gravity="center"
-        android:id="@+id/name_text_view"/>
+        android:gravity="center_horizontal"
+        android:id="@+id/tvName"/>
 
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"

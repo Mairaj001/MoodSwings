@@ -113,6 +113,7 @@ public class AudioFragment extends Fragment {
                 else {
                     Toast.makeText(getActivity().getApplicationContext(),"Please record the audio First",Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
         sentimentAnalyzer = new SentimentAnalyzer(); // Initialize your sentiment analyzer here

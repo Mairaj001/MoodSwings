@@ -12,6 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.moodswings.Models.Songs;
 import com.example.moodswings.R;
 
@@ -39,7 +43,14 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         Songs song = songsArrayList.get(position);
         holder.songTitle.setText(song.getTitle());
         holder.singer.setText(song.getSinger());
-        Glide.with(context).load(song.getCoverImage()).into(holder.coverImage);
+        RequestOptions requestOptions = new RequestOptions()
+                .transform(new CenterCrop(), new RoundedCorners(16)) // Adjust radius as needed
+                .diskCacheStrategy(DiskCacheStrategy.ALL);
+
+        Glide.with(context)
+                .load(song.getCoverImage())
+                .apply(requestOptions)
+                .into(holder.coverImage);
     }
 
     @Override

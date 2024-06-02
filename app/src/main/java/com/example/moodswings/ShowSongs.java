@@ -1,6 +1,8 @@
 package com.example.moodswings;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,10 +10,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.moodswings.Adapters.SongAdapter;
 import com.example.moodswings.Firebase.FirebaseStorage;
 import com.example.moodswings.Models.Songs;
-import com.example.moodswings.callBacks.FirestoreCallback;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShowSongs extends AppCompatActivity {
@@ -21,48 +26,68 @@ public class ShowSongs extends AppCompatActivity {
 
     public final  String TAG="ShowSongs";
 
+    RecyclerView rcv;
+    SongAdapter adapter;
+
+    FirebaseStorage firebaseStorage;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_songs);
         Intent intent=getIntent();
         sentiment=intent.getStringExtra("Sentiment");
         emojiIcon=findViewById(R.id.cover_image_view);
+        rcv=findViewById(R.id.songs_list_recycler_view);
 
-        showRecyclerContent(sentiment);
+        rcv.setLayoutManager(new LinearLayoutManager(this));
+        firebaseStorage = new FirebaseStorage(FirebaseFirestore.getInstance());
         showSentimentIcon(sentiment);
+
+        showRecyclerContent("neutral");
+
     }
 
-    private  void showSentimentIcon(String sentiments){
-        if(sentiments.toLowerCase().equals("neutral")){
-            emojiIcon.setAnimation(R.raw.neutral_emoji);
-            emojiIcon.playAnimation();
-        } else if(sentiments.toLowerCase().equals("positive")){
-            emojiIcon.setAnimation(R.raw.happy_emoji);
-            emojiIcon.playAnimation();
-        } else if(sentiments.toLowerCase().equals("negative")){
-            emojiIcon.setAnimation(R.raw.angry_emoji);
-            emojiIcon.playAnimation();
+    private void showSentimentIcon(String sentiment) {
+        // Assuming you have an emojiIcon that shows different animations based on sentiment
+        int animationResId = R.raw.neutral_emoji; // default to neutral
+
+        if (sentiment.equalsIgnoreCase("positive")) {
+            animationResId = R.raw.happy_emoji;
+        } else if (sentiment.equalsIgnoreCase("negative")) {
+            animationResId = R.raw.angry_emoji;
         }
+
+        emojiIcon.setAnimation(animationResId);
+        emojiIcon.playAnimation();
     }
-    private  void showRecyclerContent(String sentiments){
-//        if(sentiments)
 
-        FirebaseStorage firestoreHelper = new FirebaseStorage();
+    private void showRecyclerContent(String sentiment) {
 
-        // Call getSongDataNeutral and handle the callback
-        firestoreHelper.getSongDataNeutral(new FirestoreCallback() {
+        firebaseStorage.getSongData(sentiment,   new FirebaseStorage.FirestoreCallback() {
             @Override
-            public void onCallback(List<Songs> songList) {
-                if (songList != null) {
-                    // Process the songList here
-                    for (Songs song : songList) {
-                        Log.d(TAG, "Song Title: " + song.getTitle());
-                        // You can process other fields as well (e.g., singer, coverImage, songUrl)
-                    }
+            public void onCallback(ArrayList<Songs> songsList) {
+
+                if (songsList.isEmpty()) {
+                    Toast.makeText(ShowSongs.this, "No songs found for " + sentiment, Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.d(TAG, "Failed to retrieve song list.");
+                    for (Songs song : songsList) {
+                        Log.d(TAG, "Song Title: " + song.getTitle());
+                    }
+                    runOnUiThread(() -> {
+
+                        adapter = new SongAdapter(ShowSongs.this,songsList );
+                        rcv.setAdapter(adapter);
+                    });
                 }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(ShowSongs.this, "Error fetching songs: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error fetching songs: " + e.getMessage());
             }
         });
     }
