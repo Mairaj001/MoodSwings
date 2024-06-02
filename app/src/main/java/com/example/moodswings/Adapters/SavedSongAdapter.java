@@ -56,7 +56,14 @@ public class SavedSongAdapter extends RecyclerView.Adapter<SavedSongAdapter.Save
                 .apply(requestOptions)
                 .into(holder.coverImage);
 
-
+        holder.coverImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyExoplayer.startPlaying(v.getContext(), song);
+                Intent intent = new Intent(context, ActivityPlayer.class);
+                context.startActivity(intent);
+            }
+        });
 
     }
 
