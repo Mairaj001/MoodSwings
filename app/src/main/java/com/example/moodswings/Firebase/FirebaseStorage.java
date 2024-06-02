@@ -9,10 +9,21 @@ import com.example.moodswings.Models.Songs;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 public class FirebaseStorage {
 
@@ -20,8 +31,10 @@ public class FirebaseStorage {
     private FirebaseFirestore db;
     private Executor executor = Executors.newSingleThreadExecutor();
 
+
     public FirebaseStorage(FirebaseFirestore db) {
         this.db = db;
+
     }
 
     public interface FirestoreCallback {
@@ -46,4 +59,8 @@ public class FirebaseStorage {
                     });
         });
     }
+
+
+
+
 }
