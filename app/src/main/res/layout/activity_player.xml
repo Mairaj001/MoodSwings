@@ -66,8 +66,19 @@
         android:layout_marginTop="8dp"
         app:hide_on_touch="true"
         app:show_timeout="0"
+        android:background="#010B28"
         android:id="@+id/player_view"
         />
+
+    <TextView
+        android:id="@+id/saveSongBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:text="Add to saved Songs"
+        android:textColor="#757474"
+        android:textSize="18sp"
+        android:layout_marginTop="20sp"/>
 
 
 
