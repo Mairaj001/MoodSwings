@@ -56,7 +56,7 @@ public class SavedSongAdapter extends RecyclerView.Adapter<SavedSongAdapter.Save
                 .apply(requestOptions)
                 .into(holder.coverImage);
 
-<<<<<<< HEAD
+
         holder.coverImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,9 +65,9 @@ public class SavedSongAdapter extends RecyclerView.Adapter<SavedSongAdapter.Save
                 context.startActivity(intent);
             }
         });
-=======
 
->>>>>>> origin/master
+
+
 
     }
 
