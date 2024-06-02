@@ -60,6 +60,7 @@ public class ActivityPlayer extends AppCompatActivity {
         super.onDestroy();
         if (exoPlayer != null) {
             exoPlayer.removeListener(playerListener);
+            exoPlayer.stop();
         }
     }
 
