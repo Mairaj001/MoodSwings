@@ -38,6 +38,7 @@ public class ShowSongs extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_songs);
+
         Intent intent=getIntent();
         sentiment=intent.getStringExtra("Sentiment");
         emojiIcon=findViewById(R.id.cover_image_view);

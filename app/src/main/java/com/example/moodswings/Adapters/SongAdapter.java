@@ -6,9 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,11 +27,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     Context context;
     ArrayList<Songs> songsArrayList;
-    public SongAdapter(Context context,ArrayList<Songs> songsArrayList) {
-         this.context=context;
-         this.songsArrayList=songsArrayList;
-    }
 
+    public SongAdapter(Context context, ArrayList<Songs> songsArrayList) {
+        this.context = context;
+        this.songsArrayList = songsArrayList;
+    }
 
     @NonNull
     @Override
@@ -45,7 +43,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder holder, int position) {
         Songs song = songsArrayList.get(position);
-        Toast.makeText(context.getApplicationContext(),"pos"+position,Toast.LENGTH_SHORT).show();
         holder.songTitle.setText(song.getTitle());
         holder.singer.setText(song.getSinger());
         RequestOptions requestOptions = new RequestOptions()
@@ -60,17 +57,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         holder.coverImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.coverImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Context context = v.getContext(); // Get context from the clicked view
-                        MyExoplayer.SetCurrentSong(song);
-                        MyExoplayer.startPlaying(v.getContext(),song);
-                        Intent intent = new Intent(context, ActivityPlayer.class);
-//                        intent.putExtra("song", song); // Pass the song details to ActivityPlayer
-                          context.startActivity(intent);
-                    }
-                });
+                MyExoplayer.startPlaying(v.getContext(), song);
+                Intent intent = new Intent(context, ActivityPlayer.class);
+                context.startActivity(intent);
 
             }
         });
@@ -80,10 +69,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     public int getItemCount() {
         return songsArrayList.size();
     }
-
-
-
-
 
     public static class SongViewHolder extends RecyclerView.ViewHolder {
         TextView songTitle;
