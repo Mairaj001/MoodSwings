@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.moodswings.Adapters.SongAdapter;
+import com.example.moodswings.Exoplayer.MyExoplayer;
 import com.example.moodswings.Firebase.FirebaseStorage;
 import com.example.moodswings.Models.Songs;
 
@@ -74,7 +75,7 @@ public class ShowSongs extends AppCompatActivity {
                     Toast.makeText(ShowSongs.this, "No songs found for " + sentiment, Toast.LENGTH_SHORT).show();
                 } else {
                     for (Songs song : songsList) {
-                        Log.d(TAG, "Song Title: " + song.getTitle());
+                        Log.d(TAG, "Song Title: " + song.getTitle()+song.getSongUrl());
                     }
                     runOnUiThread(() -> {
 
@@ -90,5 +91,11 @@ public class ShowSongs extends AppCompatActivity {
                 Log.e(TAG, "Error fetching songs: " + e.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        MyExoplayer.releasePlayer();
+        super.onBackPressed();
     }
 }

@@ -2,7 +2,7 @@ package com.example.moodswings.Models;
 
 public class Songs {
 
-    String Title,coverImage,singer,songUrl;
+    String Title,coverImage,singer,songurl;
 
     public Songs(){
 
@@ -11,7 +11,7 @@ public class Songs {
         this.Title = title;
         this.coverImage = coverImage;
         this.singer = singer;
-        this.songUrl = songUrl;
+        this.songurl = songUrl;
     }
 
     public String getTitle() {
@@ -39,10 +39,10 @@ public class Songs {
     }
 
     public String getSongUrl() {
-        return songUrl;
+        return songurl;
     }
 
     public void setSongUrl(String songUrl) {
-        this.songUrl = songUrl;
+        this.songurl = songUrl;
     }
 }
