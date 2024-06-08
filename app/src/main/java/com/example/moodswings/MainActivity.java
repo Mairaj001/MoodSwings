@@ -12,7 +12,7 @@ import com.etebarian.meowbottomnavigation.MeowBottomNavigation;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AudioFragment.AudioFragmentListener {
 
     MeowBottomNavigation bnv;
 
@@ -25,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         bnv=findViewById(R.id.bnv);
+
+        if (savedInstanceState == null) {
+           loadFragment(new AudioFragment());
+        }
 
         //adding icons to the custom Bottom navigation bar
         bnv.add( new MeowBottomNavigation.Model(Audio,R.drawable.audio_frag_new));
@@ -74,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onNetworkAvailable() {
+        // Callback when network is available
+        AudioFragment audioFragment = (AudioFragment) getSupportFragmentManager().findFragmentById(R.id.frameLayout);
+        if (audioFragment != null) {
+            audioFragment.onNetworkAvailable();
+        }
+    }
     private void loadFragment(Fragment fragment) {
 
         FragmentManager fragmentManager = getSupportFragmentManager();

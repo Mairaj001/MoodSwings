@@ -1,10 +1,13 @@
 package com.example.moodswings;
 
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -83,6 +86,24 @@ public class AudioFragment extends Fragment {
     Button suggestSongs;
 
     String sentiment;
+
+    public interface AudioFragmentListener {
+        void onNetworkAvailable();
+    }
+
+    private AudioFragmentListener listener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof AudioFragmentListener) {
+            listener = (AudioFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement AudioFragmentListener");
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -122,9 +143,11 @@ public class AudioFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (path != null) {
-
-//                    transcribeAndAnalyzeAudio(path);
-                      uploadAudioToFirebaseInBackground(path);
+                    if (isOnline()) {
+                        uploadAudioToFirebaseInBackground(path);
+                    } else {
+                        Toast.makeText(getActivity().getApplicationContext(), "No network connection. Will upload when the network is available.", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please Record the Audio First", Toast.LENGTH_SHORT).show();
                 }
@@ -161,6 +184,7 @@ public class AudioFragment extends Fragment {
             }
         });
     }
+
     private void uploadAudioToFirebase(String filePath) {
         File audioFile = new File(filePath);
         if (!audioFile.exists()) {
@@ -267,7 +291,7 @@ public class AudioFragment extends Fragment {
 
     private  void ChangeEmojiSentiment(@NonNull String sentiment){
 
-         this.sentiment=sentiment.toLowerCase();
+        this.sentiment=sentiment.toLowerCase();
         if(sentiment.toLowerCase().equals("neutral")){
             emoji.setAnimation(R.raw.neutral_emoji);
             Toast.makeText(getActivity().getApplicationContext(),sentiment,Toast.LENGTH_SHORT).show();
@@ -461,5 +485,17 @@ public class AudioFragment extends Fragment {
 
         executorService.shutdown();
         sentimentExecutor.shutdown();
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    public void onNetworkAvailable() {
+        if (path != null) {
+            uploadAudioToFirebaseInBackground(path);
+        }
     }
 }
