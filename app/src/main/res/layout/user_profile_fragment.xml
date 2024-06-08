@@ -85,7 +85,7 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="50dp">
 
                     <TextView
                         android:id="@+id/textView2"
@@ -113,7 +113,7 @@
                     android:layout_marginBottom="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingLeft="100dp">
+                    android:paddingLeft="50dp">
 
                     <TextView
                         android:id="@+id/textViewNumber"
