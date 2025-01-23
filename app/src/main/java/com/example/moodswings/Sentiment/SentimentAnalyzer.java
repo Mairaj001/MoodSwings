@@ -12,8 +12,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 public class SentimentAnalyzer {
-    private static final String  my_API_key="245f6adc1b2e4cfa90a35e449b65f57c";
-    private static final String API_KEY = "7d18507fd8304cb1b02d1c1abf9ba5a6";
+   
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private OkHttpClient client = new OkHttpClient();
 
